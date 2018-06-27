@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Linq;
 using Dapper;
 using smoothie_shack.Models;
 
@@ -47,7 +48,25 @@ namespace smoothie_shack.Repositories
       }
     }
 
+    public User Login(UserLogin creds)
+    {
+      var user = GetUserByEmail(creds.Email);
+      if (user == null) { return null; }
+      if (BCrypt.Net.BCrypt.Verify(creds.Password, user.Password))
+      {
+        return user;
+      }
+      return null;
+    }
 
+    public User GetUserById(string id)
+    {
+      return _db.Query<User>("SELECT * FROM users WHERE id = @id", new { id }).FirstOrDefault();
+    }
 
+    public User GetUserByEmail(string email)
+    {
+      return _db.Query<User>("SELECT * FROM users WHERE email = @email", new { email }).FirstOrDefault();
+    }
   }
 }
